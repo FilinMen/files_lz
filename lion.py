@@ -40,12 +40,12 @@ print(df)
 #Закидываю результат в новый doc файл
 doc_letter = docx.Document() #создаю новый документ
 
-doc.add_heading('Встречаемость букв в тексте', level=1)#добовляем заголовок
+doc_letter.add_heading('Встречаемость букв в тексте', level=1)#добовляем заголовок
 
 #Добавление данных DataFrame в документ как текст
 for index, row in df.iterrows():
     letter_text = [f"{col}: {row[col]}" for col in df.columns]
-    doc.add_paragraph(letter_text)
+    doc_letter.add_paragraph(letter_text)
 
 doc_letter.save('встречаемость_букв.docx') # Сохраняем документ
 
