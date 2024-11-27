@@ -13,9 +13,6 @@ rus_let = re.compile(r'[а-яё]', re.IGNORECASE) #регулярное выра
 
 rus_text = [] #список для всего текста (только русские слова)
 rus_word = re.compile(r'\b[а-яё]+\b',re.IGNORECASE) #регулярное выражение для поиска русских слов 
-prepositions = {'и','в','не','что','он','на','с','как','его','то','к','стр',
-                'я','г','но','она','это','из','а','за','так','по','изд',',был',
-                'ему','всё','от','о','же','бы','ее','был','у','для','еще','р','вы','они','все','да'} 
 
 for paragraph in doc.paragraphs: #проходимся по всем параграфам в документе
     text = paragraph.text.lower() # приводим текст к нижнему регистру
@@ -24,31 +21,62 @@ for paragraph in doc.paragraphs: #проходимся по всем параг�
     all_letters.extend(letters) #добовляем буквы в общий список
 
     for word in words:
+        rus_text.append(word)
         if word not in word_list: # проверка на на наличие слова в списке 
             word_list.append(word) #добавления слова 
-        if word not in prepositions:
-            rus_text.append(word)
+
+#---------------------------------------------------------------------------------------
+#ВСТРЕЧАЕМОСТЬ РУССКИХ СЛОВ В ТЕКСТЕ
 
 word_counts = Counter(rus_text) #подсчитываем частоту встречаемости слов
-for word, count in word_counts.items():
-    data_word = {f'{word}: {count}'}
+df_word = pd.DataFrame(word_counts.items(),columns=['Word','Quantity'])
 
-letters_counts = Counter(all_letters) #подсчитываем частоту встречаемости слов
-df = pd.DataFrame(letters_counts.items(),columns=['Letter','Frequency'])
-print(df)
+doc_word = docx.Document() #создаю новый документ
 
-#Закидываю результат в новый doc файл
+doc_word.add_heading('Встречаемость слов в тексте', level=1)#добовляем заголовок
+
+# Добавляем таблицу
+table = doc_word.add_table(rows=1, cols=len(df_word.columns))
+
+#Добавляем заголовки колонок
+hdr_cells = table.rows[0].cells
+for i, column_name in enumerate(df_word.columns):
+    hdr_cells[i].text = column_name
+
+# Добавляем данные из DataFrame
+for index, row in df_word.iterrows():
+    row_cells = table.add_row().cells
+    for i, cell_value in enumerate(row):
+         row_cells[i].text = str(cell_value)
+         
+doc_word.save('встречаемость_слов.docx') # Сохраняем документ
+
+#--------------------------------------------------------------------------------------
+
+#ВСТРЕЧАЕМОСТЬ БУКВ В ТЕКСТЕ
+letters_counts = Counter(all_letters) #подсчитываем частоту встречаемости букв
+df_letter = pd.DataFrame(letters_counts.items(),columns=['letter','Quantity'])
+
 doc_letter = docx.Document() #создаю новый документ
-
 doc_letter.add_heading('Встречаемость букв в тексте', level=1)#добовляем заголовок
 
-#Добавление данных DataFrame в документ как текст
-for index, row in df.iterrows():
-    letter_text = [f"{col}: {row[col]}" for col in df.columns]
-    doc_letter.add_paragraph(letter_text)
+# Добавляем таблицу
+table = doc_letter.add_table(rows=1, cols=len(df_letter.columns))
+
+#Добавляем заголовки колонок
+hdr_cells = table.rows[0].cells
+for i, column_name in enumerate(df_letter.columns):
+    hdr_cells[i].text = column_name
+
+# Добавляем данные из DataFrame
+for index, row in df_letter.iterrows():
+    row_cells = table.add_row().cells
+    for i, cell_value in enumerate(row):
+         row_cells[i].text = str(cell_value)
 
 doc_letter.save('встречаемость_букв.docx') # Сохраняем документ
 
+#--------------------------------------------------------------------------------------
 print(len(word_list))
 print(num_par)
 
