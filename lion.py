@@ -2,6 +2,7 @@ import docx
 from collections import Counter
 import re #(регулярные выражения) модуль для работы с текстом 
 import pandas as pd
+import matplotlib.pyplot as plt
 
 doc = docx.Document('lion.docx')
 
@@ -27,86 +28,51 @@ for paragraph in doc.paragraphs: #проходимся по всем параг�
 
 #---------------------------------------------------------------------------------------
 #ВСТРЕЧАЕМОСТЬ РУССКИХ СЛОВ В ТЕКСТЕ
-
 rus_text_len = len(rus_text) #количество слов в списке
 
 word_counts = Counter(rus_text) #подсчитываем частоту встречаемости слов
-print(word_counts)
-'''
-data_words = {
+
+dict_word = {
     'Слово': list(word_counts.keys()),
     'Частота встречи,раз': list(word_counts.values()),
     'Частота встречи в %': [round((count / rus_text_len) * 100, 2) for count in word_counts.values()]
 }
-df_word = pd.DataFrame(data_words)
-'''
 
-df_word = pd.DataFrame(word_counts.items(),columns=['Слово','Частота встречи,раз','Частота встречи в %'])
-
+df_word = pd.DataFrame(dict_word)
 
 doc_word = docx.Document() #создаю новый документ
 
 doc_word.add_heading('Встречаемость слов в тексте', 0)#добовляем заголовок
-'''
-# Создание таблицы
-table = doc.add_table(rows=1, cols=3)
-hdr_cells = table.rows[0].cells
+
+table = doc_word.add_table(rows=1, cols=3) # Создаем таблицу с одной строкой и тремя колонками 
+hdr_cells = table.rows[0].cells#cells используется для доступа к конкретным ячейкам строки, чтобы заполнить их содержимым
 hdr_cells[0].text = 'Слово'
 hdr_cells[1].text = 'Частота встречи,раз'
 hdr_cells[2].text = 'Частота встречи в %'
 
-# Заполнение таблицы данными из dataframe
 for i in range(len(df_word)):
-    row_cells = table.add_row().cells
-    row_cells[0].text = df_word.loc[i, 'Слово']
+    row_cells = table.add_row().cells#добавления новой строки в таблицу                                         (i name age)
+    row_cells[0].text = df_word.loc[i, 'Слово'] #loc выбор строки с индексом [i] тоесть в dataframe это по типу (0 bob 12 ) 
     row_cells[1].text = str(df_word.loc[i, 'Частота встречи,раз'])
-    row_cells[2].text = f"{df_word.loc[i, 'Частота встречи в %']:0.2f}"
-'''
-
-# Добавляем таблицу
-table = doc_word.add_table(rows=1, cols=len(df_word.columns))
-
-#Добавляем заголовки колонок
-hdr_cells = table.rows[0].cells
-for i, column_name in enumerate(df_word.columns):
-    hdr_cells[i].text = column_name
-
-# Добавляем данные из DataFrame
-for index, row in df_word.iterrows():
-    row_cells = table.add_row().cells
-    for i, cell_value in enumerate(row):
-         row_cells[i].text = str(cell_value)    
-         row_cells[i].text = [round((count / rus_text_len) * 100, 2) for count in word_counts.values()]
+    row_cells[2].text = str(df_word.loc[i, 'Частота встречи в %'])
 
 doc_word.save('встречаемость_слов.docx') # Сохраняем документ
 
 #--------------------------------------------------------------------------------------
 #ВСТРЕЧАЕМОСТЬ БУКВ В ТЕКСТЕ
-'''
+
 letters_counts = Counter(all_letters) #подсчитываем частоту встречаемости букв
-df_letter = pd.DataFrame(letters_counts.items(),columns=['letter','Quantity'])
+df_letter = pd.DataFrame(letters_counts.items(),columns=['Буквы','Количество'])
+df_letter['Количество'] = pd.to_numeric(df_letter['Количество']) # to_numeric преобразования значений в столбцах DataFrame в числовой тип данных
 
-doc_letter = docx.Document() #создаю новый документ
-doc_letter.add_heading('Встречаемость букв в тексте', level=1)#добовляем заголовок
-
-# Добавляем таблицу
-table = doc_letter.add_table(rows=1, cols=len(df_letter.columns))
-
-#Добавляем заголовки колонок
-hdr_cells = table.rows[0].cells
-for i, column_name in enumerate(df_letter.columns):
-    hdr_cells[i].text = column_name
-
-# Добавляем данные из DataFrame
-for index, row in df_letter.iterrows():
-    row_cells = table.add_row().cells
-    for i, cell_value in enumerate(row):
-         row_cells[i].text = str(cell_value)
-
-doc_letter.save('встречаемость_букв.docx') # Сохраняем документ
-
+plt.figure(figsize=(10, 6))# Ширина фигуры будет 10 дюймов, а высота — 6 дюймов.
+plt.bar(df_letter['Буквы'], df_letter['Количество'], color='skyblue')#plt.bar создает столбчатую диаграмму.
+plt.xlabel('Буквы')#оси X, представляющие буквы
+plt.ylabel('Количество')#оси Y, представляющие Количество
+plt.title('Встречаемость букв в тексте')#plt.title задает заголовок для графика.
+plt.grid(True)#plt.grid(True) включает отображение сетки на графике, что помогает лучше визуализировать данные.
+plt.show()
 #--------------------------------------------------------------------------------------
-print(len(word_list))
-print(num_par)
-'''
+
+
 
