@@ -1,17 +1,26 @@
-import matplotlib.pyplot as plt
 import pandas as pd
+import matplotlib.pyplot as plt
 
-data_tit = pd.read_parquet('titanic.parquet', engine='pyarrow')
-df = pd.DataFrame(data_tit)
-print(df)
-'''
-df_letter['Количество'] = pd.to_numeric(df_letter['Количество'])
+df = pd.read_parquet('titanic.parquet') #Чтение файла titanic.parquet
 
-plt.figure(figsize=(10, 6))# Ширина фигуры будет 10 дюймов, а высота — 6 дюймов.
-plt.bar(df_letter['Буквы'], df_letter['Количество'], color='skyblue')#plt.bar создает столбчатую диаграмму.
-plt.xlabel('Буквы')#оси X, представляющие буквы
-plt.ylabel('Количество')#оси Y, представляющие Количество
-plt.title('Встречаемость букв в тексте')#plt.title задает заголовок для графика.
-plt.grid(True)#plt.grid(True) включает отображение сетки на графике, что помогает лучше визуализировать данные.
+df.to_csv('titanic.parquet', index=False) #сохранение данный DataFrame в csv и убираем индексы 
+
+df_csv = pd.read_csv('titanic.parquet') #читаем csv файл
+
+quantity_passengers = df_csv.groupby('Pclass').size() #Мы группируем DataFrame по столбцу Pclass пассажира.size(): Эта функция возвращает количество элементов в каждой группе.
+survived = df_csv[df_csv['Survived'] == 1].groupby('Pclass').size() / quantity_passengers * 100#(пассажиры, которые выжили),процент выживших
+not_survived = df_csv[df_csv['Survived'] == 0].groupby('Pclass').size() / quantity_passengers * 100#(пассажиры, которые не выжили),процент не выживших
+
+survival_data = pd.DataFrame({
+    'Выжившие': survived,
+    'Не выжившие': not_survived
+})
+
+# Построение гистограммы
+ax = survival_data.plot(kind='bar', stacked=True, color=['green', 'red'])#kind - тип графика bar - столбчатая диаграмма
+                                                                        #stacked - столбцы будут накладываться друг на друга
+ax.set_xlabel('Класс билета') #название оси X
+ax.set_ylabel('Доля пассажиров (%)') #название оси Y
+ax.set_title('Выживаемость пассажиров в зависимости от класса билета') #заголовок для графика
+ax.legend(title='Статус')
 plt.show()
-'''PassengerId  Survived  Pclass  Name Sex   Age SibSp Parch Ticket Fare Cabin Embarked
